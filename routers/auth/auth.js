@@ -3,18 +3,30 @@ const {PrismaClient} = require("@prisma/client");
 const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const generateIdenticon = require("../../util/generateIdenticon");
 
 // User SignUp
 router.post("/signup", async (req, res) => {
     const {username, email, password} = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
+    const icon = generateIdenticon(email, 64)
     const user = await prisma.user.create({
         data: {
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            profile: {
+                create: {
+                    bio: "Hello World!",
+                    profileImageUrl: icon,
+                }
+            }
+        },
+        include: {
+            profile: true,
         }
     });
+
 
     return res.json({user});
 })

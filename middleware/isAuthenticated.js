@@ -9,14 +9,12 @@ function isAuthenticated(req, res, next) {
     try {
         verify(token, process.env.SECRET_KEY, (err, decodedToken) => {
             if (err) {
-                console.log(err);
                 return res.status(401).json({message: "Unauthenticated"});
             }
             req.userId = decodedToken.id;
             next();
         });
     } catch (err) {
-        console.log(err);
         return res.status(401).json({message: "Unauthenticated"});
     }
 }

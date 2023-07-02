@@ -22,7 +22,6 @@ router.post("/post", isAuthenticated, async (req, res) => {
         });
         res.status(201).json(newPost)
     } catch (err) {
-        console.log(err);
         res.status(500).json({message: "Internal Server Error"});
     }
 })
@@ -34,14 +33,46 @@ router.get("/get_latest_post", async (req, res) => {
             take: 3,
             orderBy: {createdAt: "desc"},
             include: {
-                author: true,
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        profile: true,
+                    }
+                }
             }
         });
         res.status(200).json(latestPost);
     } catch (err) {
-        console.log(err);
         res.status(500).json({message: "Internal Server Error"});
     }
 });
+
+router.get("/:userId", async (req, res) => {
+    const {userId} = req.params;
+    try {
+        const userPosts = await prisma.post.findMany({
+            where: {
+                authorId: parseInt(userId),
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        profile: true,
+                    }
+                }
+            }
+        })
+        return res.status(200).json(userPosts);
+    } catch (err) {
+        res.status(500).json({message: "Internal Server Error"});
+    }
+})
 
 module.exports = router;
